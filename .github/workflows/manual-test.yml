@@ -1,0 +1,41 @@
+# Workflow 的名稱，清楚標示為「手動測試」
+name: Manual Python Script Test (Send to Personal Bot Only)
+
+# 觸發條件：只允許從 GitHub Actions 頁面手動觸發
+on:
+  workflow_dispatch:
+
+# 定義要執行的工作
+jobs:
+  run-python-test:
+    # 在最新的 Ubuntu 虛擬機上執行
+    runs-on: ubuntu-latest
+
+    # 定義工作中的步驟
+    steps:
+      # 步驟 1: 下載你的程式碼到虛擬機
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      # 步驟 2: 設定 Python 3.10 環境
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # 步驟 3: 安裝 test.py 所需的 Python 套件
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pandas beautifulsoup4 lxml tabulate
+
+      # 步驟 4: 執行 test.py
+      - name: Run test.py script
+        env:
+          # --- 關鍵修改點 ---
+          # 我們只提供執行測試必要的 Secrets。
+          # 刻意移除了 TELEGRAM_CHAT_ID，確保絕對不會發到正式群組。
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          TELEGRAM_TEST_CHAT_ID: ${{ secrets.TELEGRAM_TEST_CHAT_ID }}
+        run: python test.py
