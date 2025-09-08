@@ -1,4 +1,4 @@
-import requests
+import requests 
 import pandas as pd
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
