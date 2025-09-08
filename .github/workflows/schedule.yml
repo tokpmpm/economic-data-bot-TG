@@ -10,37 +10,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 步驟 1: 檢查前一天是否為美股交易日 (非週末或假日)
-      # 我們給這個步驟一個 id，方便後續步驟引用它的輸出結果
+      # 步驟 1: 檢查前一天是否為美股交易日
       - name: Check if US market was open yesterday
         id: check_market_open
         uses: 1desk/skip-weekends-and-holidays-action@v2
-        with:
-          # 這個 Action 預設就是檢查美國聯邦假日，符合我們的需求
-          # 它會檢查 "昨天" 是否為假日或週末
-          # 輸出 is_holiday_or_weekend 會是 'true' 或 'false'
+        # 這個 Action 預設會檢查 "昨天" 是否為週末或美國聯邦假日。
+        # 如果是，它的輸出 is_holiday_or_weekend 會是 'true'；反之為 'false'。
 
-      # 步驟 2: 下載您的程式碼
-      # 只有在 `check_market_open` 步驟的輸出 `is_holiday_or_weekend` 為 'false' 時才執行
+      # 步驟 2: 下載您的程式碼 (僅在非假日執行)
       - name: Checkout code
         if: steps.check_market_open.outputs.is_holiday_or_weekend == 'false'
         uses: actions/checkout@v3
 
-      # 步驟 3: 設定 Python 環境
+      # 步驟 3: 設定 Python 環境 (僅在非假日執行)
       - name: Set up Python
         if: steps.check_market_open.outputs.is_holiday_or_weekend == 'false'
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      # 步驟 4: 安裝所有必要的函式庫
+      # 步驟 4: 安裝所有必要的函式庫 (僅在非假日執行)
       - name: Install dependencies
         if: steps.check_market_open.outputs.is_holiday_or_weekend == 'false'
         run: |
           python -m pip install --upgrade pip
           pip install pandas requests beautifulsoup4 lxml tabulate
 
-      # 步驟 5: 執行您的 main.py 腳本
+      # 步驟 5: 執行您的 main.py 腳本 (僅在非假日執行)
       - name: Run script
         if: steps.check_market_open.outputs.is_holiday_or_weekend == 'false'
         env: # 從您設定的 Secrets 讀取 Token 和 Key
