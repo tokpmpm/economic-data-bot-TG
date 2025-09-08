@@ -1,4 +1,4 @@
-import requests 
+import requests
 import pandas as pd
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
@@ -7,18 +7,19 @@ import os
 
 # --- 從環境變數讀取 Secrets (更安全) ---
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-
-# --- 【修改點 1】: 增加測試用的 Chat ID，並建立切換邏輯 ---
-# 優先讀取測試用的 Chat ID。如果不存在，則回頭讀取正式群組的 Chat ID。
-# 這樣你只需要設定 TELEGRAM_TEST_CHAT_ID 環境變數，就能將訊息發給自己。
-# 當要發到正式群組時，只要移除這個環境變數即可。
-TELEGRAM_TEST_CHAT_ID = os.environ.get("TELEGRAM_TEST_CHAT_ID") 
-TELEGRAM_PROD_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-TARGET_CHAT_ID = TELEGRAM_TEST_CHAT_ID # <--- 判斷要用哪個 ID
-
 FRED_API_KEY = os.environ.get("FRED_API_KEY")
 
-# --- 1. 精準定義您想顯示的數據關鍵字 ---
+# --- 讀取測試用和正式用的 Chat ID ---
+# 這個邏輯可以讓同一份程式碼彈性地用於測試或正式環境
+TELEGRAM_TEST_CHAT_ID = os.environ.get("TELEGRAM_TEST_CHAT_ID") 
+TELEGRAM_PROD_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+
+# --- 【關鍵邏輯】決定訊息的最終發送目標 ---
+# 優先使用測試 ID。如果測試 ID 不存在 (None)，才會使用正式群組 ID。
+# 在 GitHub Actions 測試時，我們只會提供 TELEGRAM_TEST_CHAT_ID，所以它會 100% 發給個人。
+TARGET_CHAT_ID = TELEGRAM_TEST_CHAT_ID or TELEGRAM_PROD_CHAT_ID
+
+# --- 1. 精準定義您想顯示的數據關鍵字 (無需修改) ---
 TARGET_KEYWORDS = {
     '消費者物價指數 (CPI)', '個人消費支出 (PCE)', '生產者物價指数 (PPI)',
     '初領失業金人數', '初請失業金人數', '非農就業報告',
@@ -26,7 +27,7 @@ TARGET_KEYWORDS = {
     'FOMC', 'ISM製造業PMI', 'ISM非製造業PMI'
 }
 
-# --- 2. 為需要被 FRED 權威數據覆蓋的指標建立精簡的對照表 ---
+# --- 2. FRED 對照表 (無需修改) ---
 SERIES_MAPPING = {
     'CPI': {'id': 'CPIAUCSL', 'calc': 'yoy', 'unit': '%', 'investing_kw': '消費者物價指數 (CPI)'},
     'PCE': {'id': 'PCEPI', 'calc': 'yoy', 'unit': '%', 'investing_kw': '個人消費支出 (PCE)'},
@@ -44,40 +45,34 @@ SERIES_MAPPING = {
 
 def send_to_telegram(message):
     """將格式化的訊息發送到指定的 Telegram 聊天室"""
-    # --- 【修改點 2】: 檢查目標 Chat ID 是否存在 ---
     if not TELEGRAM_BOT_TOKEN or not TARGET_CHAT_ID:
-        if TELEGRAM_TEST_CHAT_ID:
-            print("偵測到測試模式，但 Telegram 的 Token 或測試 Chat ID 未設定，跳過發送。")
-        else:
-            print("Telegram 的 Token 或正式 Chat ID 未設定，跳過發送。")
+        print("Telegram 的 Token 或目標 Chat ID 未設定，跳過發送。")
         return
         
-    # --- 【修改點 3】: 在訊息中加入提示，讓你知道這是測試訊息 ---
     final_message = message
-    if TELEGRAM_TEST_CHAT_ID:
+    # 判斷當前是否為測試模式 (即 TARGET_CHAT_ID 等於測試 ID)
+    is_test_mode = (TARGET_CHAT_ID == TELEGRAM_TEST_CHAT_ID)
+    if is_test_mode:
         final_message = "--- 🤖 這是一則測試訊息 🤖 ---\n\n" + message
     
     formatted_message = f"<pre><code>{final_message}</code></pre>"
     api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    
-    # --- 【修改點 4】: 使用 TARGET_CHAT_ID 作為發送目標 ---
     payload = {'chat_id': TARGET_CHAT_ID, 'text': formatted_message, 'parse_mode': 'HTML'}
     
     try:
         response = requests.post(api_url, json=payload)
         response.raise_for_status()
-        if TELEGRAM_TEST_CHAT_ID:
+        if is_test_mode:
             print(f"\n訊息已成功發送到您的個人 Telegram (ID: {TARGET_CHAT_ID})！")
         else:
             print(f"\n訊息已成功發送到正式群組 (ID: {TARGET_CHAT_ID})！")
     except requests.exceptions.RequestException as e:
         print(f"\n發送訊息到 Telegram 失敗: {e}")
-        # 印出更詳細的錯誤，方便除錯
         if e.response is not None:
             print(f"錯誤內容: {e.response.text}")
 
 
-# --- 以下的程式碼完全不需要修改 ---
+# --- 以下的函數完全不需要修改 ---
 
 def get_filtered_calendar_data():
     """從 Investing.com 過濾並獲取指定的財經日曆數據"""
