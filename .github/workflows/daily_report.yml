@@ -5,7 +5,7 @@ on:
   schedule:
     # CRON 排程: 每天 00:00 (UTC) 執行
     # 這相當於台灣/香港時間 (UTC+8) 的上午 8:00
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * 2-6'
 
 jobs:
   run-python-script:
