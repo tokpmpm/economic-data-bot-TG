@@ -231,9 +231,9 @@ def main():
     start_date, end_date = today - timedelta(days=7), today + timedelta(days=7)
     
     # <--- 【修改點 2】: 修改 Telegram 訊息標題，使其更通用 ---
-    header = "--- 🤖 GitHub Actions 自動化報告 🤖 ---\n"
-    title_part = f"--- 美國核心經濟數據 ({start_date.strftime('%Y-%m-%d')} 至 {end_date.strftime('%Y-%m-%d')}) ---\n"
-    source_part = "數據來源: Investing.com + FRED"
+    header = ""
+    title_part = f" 美國核心經濟數據 ({start_date.strftime('%Y-%m-%d')} 至 {end_date.strftime('%Y-%m-%d')})\n"
+    source_part = "by 美股菜雞實驗室"
     image_caption = f"{header}{title_part}{source_part}"
 
     df_for_display = final_df.copy()
