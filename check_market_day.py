@@ -13,7 +13,7 @@ def check_if_yesterday_was_trading_day():
     # 設定時區為美東時間，以準確計算 "今天" 和 "昨天"
     tz = pytz.timezone('America/New_York')
     today_in_ny = datetime.now(tz).date()
-    yesterday_in_ny = today_in_ny - timedelta(days=1)
+    yesterday_in_ny = today_in_ny
 
     # 獲取最近的交易日列表
     # 查詢一個小範圍（例如過去7天）以確保日曆數據是有效的
