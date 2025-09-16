@@ -143,7 +143,7 @@ def get_filtered_calendar_data():
                 event_timestamp = row.get('data-event-datetime', '').replace('/', '-')
                 dt_obj = datetime.strptime(event_timestamp, '%Y-%m-%d %H:%M:%S')
                 event_date_str = f"{dt_obj.month}/{dt_obj.day}"
-                results.append({'日期': event_date_str, '經濟數據': event_name, '實際': actual or '---', '預計': forecast, '前期': previous or '---'})
+                results.append({'日期': event_date_str, '經濟數據': event_name, '實際': actual or '---', '預估': forecast, '前期': previous or '---'})
         return pd.DataFrame(results)
     except Exception as e:
         print(f"從 Investing.com 獲取數據時出錯: {e}")
@@ -237,7 +237,7 @@ def main():
     image_caption = f"{header}{title_part}{source_part}"
 
     df_for_display = final_df.copy()
-    column_order = ['日期', '經濟數據', '實際', '預計', '前期']
+    column_order = ['日期', '經濟數據', '實際', '預估', '前期']
     df_for_display_sorted = df_for_display[[col for col in column_order if col in df_for_display.columns]]
     
     print("\n正在生成數據圖片...")
