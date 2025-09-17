@@ -39,9 +39,11 @@ jobs:
       - name: Run test.py script
         env:
           # --- 關鍵修改點 ---
-          # 我們只提供執行測試必要的 Secrets。
-          # 刻意移除了 TELEGRAM_CHAT_ID，確保絕對不會發到正式群組。
+          # 建立 Python 程式認識的 TELEGRAM_CHAT_ID 變數，
+          # 並將測試用的 Secret 值賦予給它。
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_TEST_CHAT_ID }}
+          
+          # 其他必要的 Secrets
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-          TELEGRAM_TEST_CHAT_ID: ${{ secrets.TELEGRAM_TEST_CHAT_ID }}
         run: python test.py
