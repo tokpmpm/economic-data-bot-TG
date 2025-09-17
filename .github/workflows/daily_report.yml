@@ -46,7 +46,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python test.py
+        run: python main.py
 
       # 步驟 7: 如果檢查不通過，印出訊息 (可選)
       - name: Log skipped run
