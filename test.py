@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import io
-import os # <--- 【修改點 1】: 匯入 os 模組
+import os
 
 # --- 【圖片生成模組】 ---
 import matplotlib.pyplot as plt
@@ -14,8 +14,7 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 FRED_API_KEY = os.getenv("FRED_API_KEY")
 TARGET_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# --- 數據抓取相關設定 (無需修改) ---
-# ... (這裡的 TARGET_KEYWORDS 和 SERIES_MAPPING 內容保持不變，為節省空間故省略) ...
+# --- 數據抓取相關設定 (保持不變，用於爬蟲匹配) ---
 TARGET_KEYWORDS = {
     '消費者物價指數 (CPI)', '個人消費支出 (PCE)', '生產者物價指数 (PPI)',
     '初領失業金人數', '初請失業金人數', '非農就業報告',
@@ -44,16 +43,14 @@ SERIES_MAPPING = {
     'Crude Oil': {'id': 'WCRSTUS1', 'calc': 'level_change', 'unit': 'K', 'investing_kw': '原油庫存'},
 }
 
+# (create_table_image, send_image_to_telegram 等其他函數保持不變，此處省略以保持簡潔)
 def create_table_image(df):
     """將 DataFrame 轉換為一張精美的圖片"""
-    # 這段尋找字體的程式碼在 GitHub Actions 中也能正常工作，因為我們會在 workflow 中安裝字體
     font_path = None
-    # 優先尋找 Noto Sans CJK，這是我們在 GitHub Actions 中安裝的字體
     for font in fm.findSystemFonts(fontpaths=None, fontext='ttf'):
         if 'NotoSansCJK' in font or 'Noto Sans CJK' in font:
             font_path = font
             break
-    # 如果找不到，使用 matplotlib 的預設無襯線字體作為備案
     if not font_path:
         print("警告：未找到 NotoSansCJK 字體，將使用預設字體。")
         font_path = fm.findfont(fm.FontProperties(family='sans-serif'))
@@ -77,14 +74,14 @@ def create_table_image(df):
                          colWidths=[0.12, 0.45, 0.13, 0.13, 0.13]) 
 
     the_table.auto_set_font_size(False)
-    the_table.set_fontsize(40) # 數據字體
+    the_table.set_fontsize(40)
     
     for (row, col), cell in the_table.get_celld().items():
         cell.set_edgecolor(bg_color)
         cell.set_height(0.04)
         if row == 0:
             cell.set_facecolor(header_color)
-            cell.set_text_props(fontproperties=prop, color=text_color, weight='bold', ha='left', va='center', size=24) # 表頭字體
+            cell.set_text_props(fontproperties=prop, color=text_color, weight='bold', ha='left', va='center', size=24)
         else:
             cell.set_facecolor(bg_color)
             cell.set_text_props(fontproperties=prop, color=text_color, ha='left', va='center')
@@ -97,18 +94,13 @@ def create_table_image(df):
     plt.close(fig)
     return buf
 
-# --- send_image_to_telegram 和其他數據處理函數保持不變 ---
-# ... (這裡的函數內容保持不變，為節省空間故省略) ...
 def send_image_to_telegram(image_buffer, caption):
-    """將圖片和標題發送到 Telegram"""
     if not TELEGRAM_BOT_TOKEN or not TARGET_CHAT_ID:
         print("Telegram 的 Token 或目標 Chat ID 未設定，跳過發送。")
         return
-
     api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
     payload = {'chat_id': TARGET_CHAT_ID, 'caption': caption}
     files = {'photo': ('economic_data.png', image_buffer, 'image/png')}
-
     try:
         response = requests.post(api_url, data=payload, files=files)
         response.raise_for_status()
@@ -195,7 +187,6 @@ def main():
     if calendar_df.empty:
         message = "在指定的時間範圍內，未找到您指定的任何經濟數據。"
         print(message)
-        # 在自動化腳本中，如果沒數據就發送一則文字訊息通知
         if TELEGRAM_BOT_TOKEN and TARGET_CHAT_ID:
             requests.post(f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
                           data={'chat_id': TARGET_CHAT_ID, 'text': message})
@@ -230,7 +221,6 @@ def main():
     
     start_date, end_date = today - timedelta(days=7), today + timedelta(days=7)
     
-    # <--- 【修改點 2】: 修改 Telegram 訊息標題，使其更通用 ---
     header = ""
     title_part = f" 美國核心經濟數據 ({start_date.strftime('%Y-%m-%d')} 至 {end_date.strftime('%Y-%m-%d')})\n"
     source_part = "by 美股菜雞實驗室"
@@ -239,6 +229,13 @@ def main():
     df_for_display = final_df.copy()
     column_order = ['日期', '經濟數據', '實際', '預估', '前期']
     df_for_display_sorted = df_for_display[[col for col in column_order if col in df_for_display.columns]]
+    
+    # --- 【新增修改點】: 在生成圖片前，替換報告中的文字 ---
+    print("替換報告顯示文字：同比 -> 年增率, 月環比 -> 月增率")
+    # 使用 .str.replace() 方法對 '經濟數據' 欄位進行文字替換
+    # regex=False 表示進行純文字替換，避免括號被視為正則表達式特殊字元
+    df_for_display_sorted['經濟數據'] = df_for_display_sorted['經濟數據'].str.replace('(同比)', '(年增率)', regex=False)
+    df_for_display_sorted['經濟數據'] = df_for_display_sorted['經濟數據'].str.replace('(月環比)', '(月增率)', regex=False)
     
     print("\n正在生成數據圖片...")
     table_image_buffer = create_table_image(df_for_display_sorted)
