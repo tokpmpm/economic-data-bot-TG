@@ -43,7 +43,7 @@ TARGET_KEYWORDS = {
     'FOMC', 'ISM製造業PMI', 'ISM非製造業PMI',
     '核心消費價格指數', '居民消費價格指數', '持續申請失業救濟人數',
     '原油庫存', '利率決議',
-    '核心零售銷售', '庫欣原油庫存'
+    '核心零售銷售', '庫欣原油庫存',	'製造業PMI', '服務業PMI', '新屋銷售', '國內生產總值(GDP)'
 }
 
 
@@ -185,10 +185,11 @@ def main():
     column_order = ['日期', '經濟數據', '實際', '預估', '前期']
     df_for_display_sorted = final_df[column_order]
 
-    print("替換報告顯示文字：同比 -> 年增率, 月環比 -> 月增率")
+    print("替換報告顯示文字：同比 -> 年增率, 月環比 -> 月增率,  季度環比 -> 季增率")
     df_for_display_sorted['經濟數據'] = df_for_display_sorted['經濟數據'].str.replace('(同比)', '(年增率)', regex=False)
     df_for_display_sorted['經濟數據'] = df_for_display_sorted['經濟數據'].str.replace('(月環比)', '(月增率)', regex=False)
-
+    df_for_display_sorted['經濟數據'] = df_for_display_sorted['經濟數據'].str.replace('(季度環比)', '(季增率)', regex=False)
+    
     print("\n正在生成數據圖片...")
     table_image_buffer = create_table_image(df_for_display_sorted)
 
