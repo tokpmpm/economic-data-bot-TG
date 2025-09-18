@@ -37,20 +37,39 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_TEST_CHAT_ID: ${{ secrets.TELEGRAM_TEST_CHAT_ID }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "Testing environment variables..."
           echo "TELEGRAM_BOT_TOKEN length: ${#TELEGRAM_BOT_TOKEN}"
           echo "TELEGRAM_TEST_CHAT_ID: $TELEGRAM_TEST_CHAT_ID"
+          echo "TELEGRAM_CHAT_ID: $TELEGRAM_CHAT_ID"
+          
+          # 檢查 TELEGRAM_BOT_TOKEN
           if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
             echo "ERROR: TELEGRAM_BOT_TOKEN is empty!"
           else
             echo "TELEGRAM_BOT_TOKEN is set (first 10 chars): ${TELEGRAM_BOT_TOKEN:0:10}..."
           fi
+          
+          # 檢查 TELEGRAM_TEST_CHAT_ID
           if [ -z "$TELEGRAM_TEST_CHAT_ID" ]; then
             echo "ERROR: TELEGRAM_TEST_CHAT_ID is empty!"
           else
             echo "TELEGRAM_TEST_CHAT_ID is set: $TELEGRAM_TEST_CHAT_ID"
           fi
+          
+          # 檢查 TELEGRAM_CHAT_ID
+          if [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "ERROR: TELEGRAM_CHAT_ID is empty!"
+          else
+            echo "TELEGRAM_CHAT_ID is set: $TELEGRAM_CHAT_ID"
+          fi
+          
+          # 總結檢查結果
+          echo "=== 環境變數檢查總結 ==="
+          echo "TELEGRAM_BOT_TOKEN: $([ -n "$TELEGRAM_BOT_TOKEN" ] && echo "✓ 已設定" || echo "✗ 未設定")"
+          echo "TELEGRAM_TEST_CHAT_ID: $([ -n "$TELEGRAM_TEST_CHAT_ID" ] && echo "✓ 已設定" || echo "✗ 未設定")"
+          echo "TELEGRAM_CHAT_ID: $([ -n "$TELEGRAM_CHAT_ID" ] && echo "✓ 已設定" || echo "✗ 未設定")"
       
       # 步驟 6: 執行 test.py，並設定正確的環境變數
       - name: Run test.py script
@@ -59,7 +78,7 @@ jobs:
           # 建立 Python 程式認識的 TELEGRAM_CHAT_ID 變數，
           # 並將測試用的 Secret 值賦予給它。
           TELEGRAM_TEST_CHAT_ID: ${{ secrets.TELEGRAM_TEST_CHAT_ID }}
-          
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           # 其他必要的 Secrets
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: python test.py
