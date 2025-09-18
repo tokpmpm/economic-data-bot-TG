@@ -188,7 +188,8 @@ def main():
     print("替換報告顯示文字：同比 -> 年增率, 月環比 -> 月增率,  季度環比 -> 季增率")
     df_for_display_sorted['經濟數據'] = df_for_display_sorted['經濟數據'].str.replace('(同比)', '(年增率)', regex=False)
     df_for_display_sorted['經濟數據'] = df_for_display_sorted['經濟數據'].str.replace('(月環比)', '(月增率)', regex=False)
-
+    df_for_display_sorted['經濟數據'] = df_for_display_sorted['經濟數據'].str.replace('(季度環比)', '(季增率)', regex=False)
+    
     print("\n正在生成數據圖片...")
     table_image_buffer = create_table_image(df_for_display_sorted)
 
