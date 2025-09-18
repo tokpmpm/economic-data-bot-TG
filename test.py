@@ -12,13 +12,13 @@ import matplotlib.font_manager as fm
 # --- 【GitHub Actions 環境】: 使用 os.getenv 讀取 Secrets ---
 # 將 Colab 的 userdata.get 改為 GitHub Actions 的標準做法
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TARGET_CHAT_ID = os.getenv("TELEGRAM_TEST_CHAT_ID") # 根據 GitHub Actions 的習慣命名
+TARGET_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID") # 根據 GitHub Actions 的習慣命名
 
 
 # === 加入詳細的除錯訊息 ===
 print("=== 環境變數除錯資訊 ===")
 print(f"TELEGRAM_BOT_TOKEN 是否存在: {'是' if TELEGRAM_BOT_TOKEN else '否'}")
-print(f"TELEGRAM_TEST_CHAT_ID 是否存在: {'是' if TARGET_CHAT_ID else '否'}")
+print(f"TELEGRAM_CHAT_ID 是否存在: {'是' if TARGET_CHAT_ID else '否'}")
 
 # 顯示部分值（不暴露完整 token）
 if TELEGRAM_BOT_TOKEN:
