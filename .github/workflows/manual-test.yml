@@ -1,41 +1,58 @@
 # Workflow 的名稱，清楚標示為「手動測試」
 name: Manual Python Script Test (Send to Personal Bot Only)
-
 # 觸發條件：只允許從 GitHub Actions 頁面手動觸發
 on:
   workflow_dispatch:
-
 # 定義要執行的工作
 jobs:
   run-python-test:
     # 在最新的 Ubuntu 虛擬機上執行
     runs-on: ubuntu-latest
-
     # 定義工作中的步驟
     steps:
       # 步驟 1: 下載你的程式碼到虛擬機
       - name: Checkout repository code
         uses: actions/checkout@v4
-
+      
       # 步驟 2: 設定 Python 環境
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.9' # 與您正式的 workflow 版本保持一致
-
+      
       # 步驟 3: 安裝系統依賴 (中文字體) - 非常重要！
       - name: Install system dependencies (fonts)
         run: |
           sudo apt-get update
           sudo apt-get install -y fonts-noto-cjk
-
+      
       # 步驟 4: 使用 requirements.txt 安裝所有 Python 套件 - 非常重要！
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      # 步驟 5: 執行 test.py，並設定正確的環境變數
+      
+      # 步驟 5: 測試環境變數（在執行 Python 腳本之前）
+      - name: Test environment variables
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_TEST_CHAT_ID: ${{ secrets.TELEGRAM_TEST_CHAT_ID }}
+        run: |
+          echo "Testing environment variables..."
+          echo "TELEGRAM_BOT_TOKEN length: ${#TELEGRAM_BOT_TOKEN}"
+          echo "TELEGRAM_TEST_CHAT_ID: $TELEGRAM_TEST_CHAT_ID"
+          if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+            echo "ERROR: TELEGRAM_BOT_TOKEN is empty!"
+          else
+            echo "TELEGRAM_BOT_TOKEN is set (first 10 chars): ${TELEGRAM_BOT_TOKEN:0:10}..."
+          fi
+          if [ -z "$TELEGRAM_TEST_CHAT_ID" ]; then
+            echo "ERROR: TELEGRAM_TEST_CHAT_ID is empty!"
+          else
+            echo "TELEGRAM_TEST_CHAT_ID is set: $TELEGRAM_TEST_CHAT_ID"
+          fi
+      
+      # 步驟 6: 執行 test.py，並設定正確的環境變數
       - name: Run test.py script
         env:
           # --- 關鍵修改點 ---
