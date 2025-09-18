@@ -185,7 +185,7 @@ def main():
     column_order = ['日期', '經濟數據', '實際', '預估', '前期']
     df_for_display_sorted = final_df[column_order]
 
-    print("替換報告顯示文字：同比 -> 年增率, 月環比 -> 月增率")
+    print("替換報告顯示文字：同比 -> 年增率, 月環比 -> 月增率,  季度環比 -> 季增率")
     df_for_display_sorted['經濟數據'] = df_for_display_sorted['經濟數據'].str.replace('(同比)', '(年增率)', regex=False)
     df_for_display_sorted['經濟數據'] = df_for_display_sorted['經濟數據'].str.replace('(月環比)', '(月增率)', regex=False)
 
