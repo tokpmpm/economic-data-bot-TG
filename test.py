@@ -119,7 +119,7 @@ def get_investing_calendar_data():
     api_url = "https://hk.investing.com/economic-calendar/Service/getCalendarFilteredData"
     headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://hk.investing.com/economic-calendar/", "X-Requested-With": "XMLHttpRequest"}
     today = datetime.now()
-    start_date, end_date = today - timedelta(days=7), today + timedelta(days=7)
+    start_date, end_date = today - timedelta(days=14), today + timedelta(days=14)
     payload = {
         "country[]": "5",
         "importance[]": ["2", "3"],
