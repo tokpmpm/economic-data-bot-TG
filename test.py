@@ -174,7 +174,7 @@ def main():
 
     print("\n步驟 2/2: 數據已獲取，準備生成圖片...")
     today = datetime.now()
-    start_date, end_date = today - timedelta(days=7), today + timedelta(days=7)
+    start_date, end_date = today - timedelta(days=14), today + timedelta(days=14)
 
     # --- 修改 Telegram 訊息標題，使其更適合自動化腳本 ---
     # 移除了 "Colab 測試訊息" 的標頭
