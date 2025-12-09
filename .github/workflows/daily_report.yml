@@ -1,4 +1,4 @@
-name: Daily Economic Data Report
+name: Daily Economic Data Report 
 
 on:
   workflow_dispatch: # 允許手動觸發
