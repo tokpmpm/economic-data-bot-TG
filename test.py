@@ -57,10 +57,10 @@ def create_table_image(df):
             font_path = font
             break
     if not font_path:
-        print("警告：未找到 NotoSansCJK 字體，將使用預設字體。")
-        font_path = fm.findfont(fm.FontProperties(family='sans-serif'))
-
-    prop = fm.FontProperties(fname=font_path)
+        print("警告：未找到 NotoSansCJK 字體，將使用系統預設字體。")
+        prop = fm.FontProperties()
+    else:
+        prop = fm.FontProperties(fname=font_path)
     num_rows = len(df)
     fig_height = max(10, num_rows * 0.3)
     fig, ax = plt.subplots(figsize=(8, fig_height))
