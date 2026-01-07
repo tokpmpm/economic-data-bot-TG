@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.10'
 
       # 步驟 3: 安裝系統依賴 (中文字體)
       - name: Install system dependencies (fonts)
